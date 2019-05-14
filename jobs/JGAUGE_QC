@@ -1,0 +1,138 @@
+#!/bin/ksh 
+
+set -xa
+export PS4='$SECONDS + '
+date
+
+# #### 01/19/00 ###############################
+# SETUP GAUGE QC PROCESSING VARIABLES
+# #############################################
+
+####################################
+# obtain unique process id (pid) and make temp directory
+####################################
+export pid=$$
+
+####################################
+# Specify NET and RUN Name and model
+####################################
+export NET=hourly
+
+####################################
+# Determine Job Output Name on System
+####################################
+export outid="LL$job"
+export jobid="${outid}.o${pid}"
+export pgmout="OUTPUT.${pid}"
+export pgmerr=errfile
+
+####################################
+# SENDDBN  - Issue DBNet Client Calls
+# GET_IOPROFILE - Run I/O statistics
+####################################
+if [ "$envir" = dev ]; then   ### For Developers
+  export SENDDBN=NO
+else
+  export SENDDBN=YES
+fi
+export GET_IOPROFILE=NO
+
+##############################
+# Set up the UTILITIES
+##############################
+
+export utilscript=/nwprod/util/ush
+
+export DATA=$TMPDIR/${job}.${pid}
+mkdir -p $DATA
+cd $DATA
+
+##############################
+# Run setup to initialize working directory and utility scripts
+##############################
+# 'cycle' is needed to run setpdy.  
+# In the dev mode, PDYm1 is an optional argument from the SMS script.
+export cycle=t${cyc}z
+##############################
+# Run setpdy and initialize PDY variables
+##############################
+
+sh $utilscript/setup.sh
+sh $utilscript/setpdy.sh
+. PDY
+
+##############################################
+# Define directories
+##############################################
+
+export COM=${COM:-/com}
+export DCOM=${DCOM:-/dcom}
+export COMSHF=/com/ingest/prod/shf.$PDYm1
+export DCOMgauge=$DCOM/us007003/gaugeqc
+
+if [ "${RUN_ENVIR}" = dev ]    ### For Developers
+then
+# HOMEgauge and WRKDIR are set in the ECF script.
+  export COMIN=${COMIN:-$COM/hourly/prod/gaugeqc}
+  export COMOUT=/meso/noscrub/$LOGNAME/gaugeqc.output
+  if [ ! -d $TMPDIR/logs ]; then
+    mkdir $TMPDIR/logs
+  fi
+  jlogfile=$TMPDIR/logs/jlogfile
+else                         ### For Operations
+  export COMIN=${COMIN:-$COM/hourly/$envir/gaugeqc}
+  export COMOUT=${COMIN:-$COM/hourly/$envir/gaugeqc}
+  if [ $envir = "prod" ]
+  then
+    export jlogfile=${jlogfile:-/com/logs/jlogfiles/jlogfile.${job}.${pid}}
+  else
+    export jlogfile=/com/logs/${envir}/jlogfile
+  fi
+fi
+
+export HOMEgauge=${HOMEgauge:-/nw${envir}/gaugeqc.${model_ver}}
+export PARMgauge=$HOMEgauge/parm
+export SCRIPTgauge=$HOMEgauge/scripts
+export USHgauge=$HOMEgauge/ush
+export FIXgauge=$HOMEgauge/fix
+export DICTgauge=$HOMEgauge/dictionaries
+
+# This block of data replaces what's in the awkward gaugeqc_fileloc.ref:
+
+
+if test ! -d $COMOUT
+then
+   mkdir -p $COMOUT
+fi
+
+if [ ! $COMIN = $COMOUT ]; then
+  cp $COMIN/*.NWSLI $COMOUT/.
+fi
+
+msg="HAS BEGUN on `hostname`"
+postmsg "$jlogfile" "$msg"
+env
+#############################################################
+# Execute script to process daily and hourly gauge data
+   $SCRIPTgauge/exgaugeqc_gauges2dcom.sh.ecf >> $pgmout
+
+# Run gauge qc:
+   $SCRIPTgauge/exgaugeqc_qc.sh.ecf >> $pgmout
+
+cat $pgmout
+
+##############################
+# Remove the Temporary working directory
+##############################
+
+# 
+# Do not delete the working directory if keepwrkdir=Y
+# This variable is not called 'debug' because 'debug' is a flag used elsewhere
+# in the ush/*.pl scripts.
+#
+if [ $keepwrkdir = N ]; then
+  cd $TMPDIR
+  rm -rf $DATA
+fi
+
+date

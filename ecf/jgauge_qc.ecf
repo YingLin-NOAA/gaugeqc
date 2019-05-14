@@ -1,0 +1,83 @@
+#!/bin/ksh -x
+#BSUB -J jverf_precip_getppt
+#BSUB -oo /ptmp/Ying.Lin/output/out.gaugeqc.%J
+#BSUB -eo /ptmp/Ying.Lin/output/out.gaugeqc.%J
+#BSUB -n 1
+#BSUB -q "dev"
+#BSUB -W 1:00
+
+# EXPORT list here
+export RUN_ENVIR=dev   
+export envir=dev
+export cyc=03 # 'cyc' is needed in JOBS script to run setpdy. 
+export job=gaugeqc
+#export run=cold
+#export colddate=20120901
+export run=warm
+
+#######################################
+# For developers
+if [ $envir = dev ]; then
+  # So that the script can find the 'postmsg','startmsg' etc. in the current 
+  # dir:
+  export PATH=$PATH:.
+  export COM=/meso/save/$LOGNAME/gaugeqc.input/com
+  export DCOM=/meso/save/$LOGNAME/gaugeqc.input/dcom
+  export HOMEgauge=/meso/save/$LOGNAME/gaugeqc.v1.1.1
+  export TMPDIR=/stmp/$LOGNAME
+else
+  export HOMEgauge=/nw${envir}/gaugeqc.v1.1.1
+  export TMPDIR=/tmpnwprd
+fi
+#######################################
+
+# CALL executable job script here
+if [ $envir != dev ]; then
+  SMSNAME=%SMSNAME% export SMSNAME
+  SMSNODE=%SMSNODE% export SMSNODE
+  SMSPASS=%SMSPASS% export SMSPASS
+  SMS_PROG=%SMS_PROG% export SMS_PROG
+
+  SMSBIN=/nwprod/sms/bin export SMSBIN
+fi
+
+# This script has two optional "environmental variables" (originally set up
+# as arguments:
+#   var 1: qcday (yyyymmdd) (if var 1 not set, $daym1 is used in J-job)
+#   var 2: keepwrkdir (default: delete wrkdir [i.e. "$DATA"] in J-job)
+
+export keepwrkdir=N
+
+if [ "$RUN_ENVIR" = dev ]; then        ### for dev 
+  # So that the script can find the 'postmsg','startmsg' etc. in the current 
+  # dir:
+  export PATH=$PATH:.
+  qcday=20130116
+  export PDY=`/nwprod/util/exec/ndate +24 ${qcday}12 | cut -c 1-8`
+  export keepwrkdir=Y
+fi
+
+$HOMEgauge/jobs/JGAUGE_QC
+
+if [ $envir != dev ]; then
+
+%manual
+######################################################################
+# Purpose: To execute the job that sends hourly and daily gauge data to 
+#          the 40-day gaugeqc rotating archive, /dcom/us007003/gaugeqc
+#
+# 2009/06/12 wx11sc: Moved up start time by 10 minutes (0340 to 0350)
+# due to faster run time on Cirrus. 
+######################################################################
+
+######################################################################
+# Job specific troubleshooting instructions:
+#  see generic troubleshoot manual page
+#
+######################################################################
+
+# include manual page below
+%include /sms/smsnets/scripts/smsProduction.man
+%end
+
+fi # .... if [ $envir != dev ]; then ....

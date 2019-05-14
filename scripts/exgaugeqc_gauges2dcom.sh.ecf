@@ -1,0 +1,28 @@
+#!/bin/ksh -x
+#
+# Script to send hourly and daily gauge data to the 40-day rotating archive,
+#   /dcom/us007003/gaugeqc/
+#
+# Hourly data: copied from /com/ingest/prod/shf.yyyymmdd/hrly.prcp.day.mmdd
+#   and re-named to hrly.prcp.day.yyyymmdd
+# Daily data: processed from /com/ingest/prod/shf.yyyymmdd/rfc24-* 
+#   using sub-script gaugeqc_load_qual_prcp.pl (Michaud), which emulates 
+#   Sid Katz's processing on sgi109.
+#   
+# This job is to be run at 03:40 UTC each day.
+#
+set -x
+
+cd $DATA
+mmdd=`echo $PDYm1 | cut -c5-8`
+
+cat $COMSHF/rfc24-uniq-early \
+    $COMSHF/rfc24-x2001      \
+    $COMSHF/rfc24-x5004         > rfc24.input
+
+$USHgauge/gaugeqc_load_qual_prcp.pl $PDYm1 > usa-dlyprcp-${PDYm1}
+
+cp usa-dlyprcp-${PDYm1} $COMOUT/.
+cp $COMSHF/hrly.prcp.day.${mmdd} $COMOUT/hrly.prcp.day.${PDYm1}
+
+exit
