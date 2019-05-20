@@ -1,12 +1,15 @@
-#!/bin/ksh -x
-#BSUB -J jverf_precip_getppt
-#BSUB -oo /ptmp/Ying.Lin/output/out.gaugeqc.%J
-#BSUB -eo /ptmp/Ying.Lin/output/out.gaugeqc.%J
+#!/bin/ksh
+#BSUB -J jgaugeqc
+#BSUB -oo /ptmpp1/Ying.Lin/cron.out/out.gaugeqc.%J
+#BSUB -eo /ptmpp1/Ying.Lin/cron.out/out.gaugeqc.%J
+#BSUB -cwd /stmpp1/Ying.Lin
 #BSUB -n 1
 #BSUB -q "dev"
 #BSUB -W 1:00
+#BSUB -P VERF-T2O
 
 # EXPORT list here
+set -x
 export RUN_ENVIR=dev   
 export envir=dev
 export cyc=03 # 'cyc' is needed in JOBS script to run setpdy. 
@@ -15,16 +18,22 @@ export job=gaugeqc
 #export colddate=20120901
 export run=warm
 
+# For loading modules:
+. /usrx/local/Modules/default/init/ksh
+module load prod_util
+module load prod_envir
+
 #######################################
 # For developers
 if [ $envir = dev ]; then
   # So that the script can find the 'postmsg','startmsg' etc. in the current 
   # dir:
   export PATH=$PATH:.
-  export COM=/meso/save/$LOGNAME/gaugeqc.input/com
-  export DCOM=/meso/save/$LOGNAME/gaugeqc.input/dcom
+  export COMROOT=/meso/noscrub/$LOGNAME/gaugeqc.input/com
+  export DCOMROOT=/meso/noscrub/$LOGNAME/gaugeqc.input/dcom
+  export COMOUT=/meso/noscrub/$LOGNAME/gaugeqc.output
   export HOMEgauge=/meso/save/$LOGNAME/gaugeqc.v1.1.1
-  export TMPDIR=/stmp/$LOGNAME
+  export TMPDIR=/stmpp1/$LOGNAME/tmpnwprd
 else
   export HOMEgauge=/nw${envir}/gaugeqc.v1.1.1
   export TMPDIR=/tmpnwprd
@@ -52,8 +61,12 @@ if [ "$RUN_ENVIR" = dev ]; then        ### for dev
   # So that the script can find the 'postmsg','startmsg' etc. in the current 
   # dir:
   export PATH=$PATH:.
-  qcday=20130116
-  export PDY=`/nwprod/util/exec/ndate +24 ${qcday}12 | cut -c 1-8`
+# if making a 'retro' run, set 'qcday' below, and export PDY as indicated,
+# so that 'setpdy' in the J-job will have PDYm1=qcday.  Otherwise leave
+# qcday and PDY unset here.  Normally run is submitted at 03:50Z $PDY, for
+# QC day of PDYm1.  
+  qcday=20170309
+  export PDY=`$NDATE +24 ${qcday}12 | cut -c 1-8`
   export keepwrkdir=Y
 fi
 
