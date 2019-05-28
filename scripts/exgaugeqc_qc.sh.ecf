@@ -18,7 +18,8 @@ set -x
 #     No need to export PERLLIB when running interactively.  
 # For running under LSF: on 24 Jan 2013, the Date-Calc-6.3 perl modules were 
 # installed in GPFS on Tide (/usrx/local/pm5) for compute node use.   
-export PERL5LIB="/usrx/local/pm5/lib64/perl5:/usrx/local/pm5/share/perl5"
+# export PERL5LIB="/usrx/local/pm5/lib64/perl5:/usrx/local/pm5/share/perl5"
+export PERL5LIB="/usrx/local/prod/packages/pm5/1.0/lib/perl5"
 
 cd $DATA
 
@@ -29,7 +30,7 @@ cp $COMIN/*.neigh .
 
 #
 yday=$PDYm1
-today=`/nwprod/util/exec/ndate +24 ${yday}12 | cut -c 1-8`
+today=`$NDATE +24 ${yday}12 | cut -c 1-8`
 
 # For coldstart, if argument is 20070717, QC would go from 07/17 to 08/14 (29
 #   days total)

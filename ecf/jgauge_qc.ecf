@@ -1,15 +1,22 @@
-#!/bin/ksh
-#BSUB -J jgaugeqc
-#BSUB -oo /ptmpp1/Ying.Lin/cron.out/out.gaugeqc.%J
-#BSUB -eo /ptmpp1/Ying.Lin/cron.out/out.gaugeqc.%J
-#BSUB -cwd /stmpp1/Ying.Lin
+#!/bin/bash
+#BSUB -J gaugeqc
+#BSUB -P RTMA-T2O
+#BSUB -o /gpfs/dell2/ptmp/Ying.Lin/cron.out/gaugeqc.%J
+#BSUB -e /gpfs/dell2/ptmp/Ying.Lin/cron.out/gaugeqc.%J
 #BSUB -n 1
 #BSUB -q "dev"
 #BSUB -W 1:00
-#BSUB -P VERF-T2O
+#BSUB -R span[ptile=1]
 
-# EXPORT list here
 set -x
+
+module purge
+module load ips/18.0.1.163    # for prod_util
+module load prod_util/1.1.1
+module load prod_envir/1.0.2
+module load pm5/1.0           # Perl, for the  Date::Calc 
+
+export gaugeqc_ver=v1.1.2
 export RUN_ENVIR=dev   
 export envir=dev
 export cyc=03 # 'cyc' is needed in JOBS script to run setpdy. 
@@ -18,25 +25,23 @@ export job=gaugeqc
 #export colddate=20120901
 export run=warm
 
-# For loading modules:
-. /usrx/local/Modules/default/init/ksh
-module load prod_util
-module load prod_envir
-
 #######################################
 # For developers
 if [ $envir = dev ]; then
   # So that the script can find the 'postmsg','startmsg' etc. in the current 
   # dir:
   export PATH=$PATH:.
-  export COMROOT=/meso/noscrub/$LOGNAME/gaugeqc.input/com
-  export DCOMROOT=/meso/noscrub/$LOGNAME/gaugeqc.input/dcom
-  export COMIN=/meso/noscrub/$LOGNAME/gaugeqc.input
-  export COMOUT=/meso/noscrub/$LOGNAME/gaugeqc.output
-  export HOMEgauge=/meso/save/$LOGNAME/gaugeqc.v1.1.1
-  export TMPDIR=/stmpp1/$LOGNAME/tmpnwprd
+  export NOSCRUB=/gpfs/dell2/emc/verification/noscrub/$LOGNAME
+# COMROOT and DCOMROOT not used. 
+#  export COMROOT=/meso/noscrub/$LOGNAME/gaugeqc.input/com
+#  export DCOMROOT=/meso/noscrub/$LOGNAME/gaugeqc.input/dcom
+  export DCOM=/gpfs/gp1/nco/ops/dcom
+  export COMIN=/gpfs/gd1/emc/meso/noscrub/$LOGNAME/gaugeqc.input
+  export COMOUT=$NOSCRUB/gaugeqc.output
+  export HOMEgauge=$NOSCRUB/gaugeqc.${gaugeqc_ver}
+  export TMPDIR=/gpfs/dell2/stmp/$LOGNAME/tmpnwprd
 else
-  export HOMEgauge=/nw${envir}/gaugeqc.v1.1.1
+  export HOMEgauge=/nw${envir}/gaugeqc.${gaugeqc_ver}
   export TMPDIR=/tmpnwprd
 fi
 #######################################
@@ -66,7 +71,7 @@ if [ "$RUN_ENVIR" = dev ]; then        ### for dev
 # so that 'setpdy' in the J-job will have PDYm1=qcday.  Otherwise leave
 # qcday and PDY unset here.  Normally run is submitted at 03:50Z $PDY, for
 # QC day of PDYm1.  
-#  qcday=20190520
+  qcday=20190520
   export PDY=`$NDATE +24 ${qcday}12 | cut -c 1-8`
   export keepwrkdir=Y
 fi
