@@ -66,16 +66,13 @@ setpdy.sh
 
 export COM=${COM:-/com}
 export DCOM=${DCOM:-/dcom}
-
-export COMSHF=/gpfs/gp1/nco/ops/com/ingest/prod/shf.$PDYm1
-# NEW: export COMSHF=`compath.py ingest/prod`
+# future: export COMSHF=`compath.py ingest/prod`/shef_pefiles
+export COMSHF=/gpfs/dell1/nco/ops/dcom/prod/shef_pefiles
 export DCOMgauge=$DCOM/us007003/gaugeqc
 
 if [ "${RUN_ENVIR}" = dev ]    ### For Developers
 then
 # HOMEgauge and WRKDIR are set in the ECF script.
-  export COMIN=${COMIN:-$COM/hourly/prod/gaugeqc}
-  export COMOUT=$NOSCRUB/gaugeqc.output
   if [ ! -d $TMPDIR/logs ]; then
     mkdir $TMPDIR/logs
   fi

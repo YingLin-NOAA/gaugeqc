@@ -16,13 +16,36 @@ set -x
 cd $DATA
 mmdd=`echo $PDYm1 | cut -c5-8`
 
-cat $COMSHF/rfc24-uniq-early \
-    $COMSHF/rfc24-x2001      \
-    $COMSHF/rfc24-x5004         > rfc24.input
-
+# process daily gauge data from the SHEF output:
+egrep ' P P 2001| P P 5004' $COMSHF/$PDYm1.pe > rfc24.input
 $USHgauge/gaugeqc_load_qual_prcp.pl $PDYm1 > usa-dlyprcp-${PDYm1}
-
 cp usa-dlyprcp-${PDYm1} $COMOUT/.
-cp $COMSHF/hrly.prcp.day.${mmdd} $COMOUT/hrly.prcp.day.${PDYm1}
+
+# process the hourly gauge data from SHEF output.  These are the ' P P 1001'
+# entries in $COMSHF/$PDYm1.pe.  A few complications in the Dell file that
+# was not in the phase1 /com/ingest/prod/shf.yyyymmdd/hrly.prcp.day.mmdd
+#   1) some of them have 'missing' values (-9999.).  Use grep -v '\-9999.'
+#      to eliminate them.
+#   2) some of them are from the previous day.  Making this complicated is
+#      that the date in the yyyymmdd.pe is in the form of 'yyyy mm dd' and
+#      when the mm/dd are single-digit, they do not show up with a leading
+#      zero, e.g.
+#        2019  5 20  0  0 MNTK1    P P 1001
+#      and
+#        2019  4  4 18 15 PIMC1 ...
+#      So we need to construct a string (daystring) with the appropriate 
+#      blank spaces.
+yyyy=${PDYm1:0:4}
+mm=${PDYm1:4:2}
+dd=${PDYm1:6:2}
+# Use '-' instead of ' ' as separator, e.g. 2019-04-04, because it's too hard
+# to create a '2019 04 04' initially.  
+tmpstring=`echo $yyyy`-`echo $mm`-`echo $dd` 
+# In the line below, the 1st/2nd 'sed' substitutes possible leading zeros in
+# mm/dd with a blank space; the 3rd 'sed' substitutes '-' with blank space:
+daystring=`echo $tmpstring | sed -E 's/^(.{5})0/\1 /' | sed -E 's/^(.{8})0/\1 /' | sed 's/-/ /g'`
+# some data have valid times from earlier days.  We want to have only today's 
+# data:
+grep ' P P 1001' $COMSHF/$PDYm1.pe | grep -v '\-9999.' | grep "$daystring" > $COMOUT/hrly.prcp.day.${PDYm1}
 
 exit

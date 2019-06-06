@@ -61,7 +61,8 @@ while (<SHEF>)
     #################################################
     # Read one line of input file
     #################################################
-    ($id,$yr,$mn,$dy,$hr,$mi,$p1,$p2,$dur,$tc,$sc,$ec,$j1,$val,$qual,$rv,$org) = split(" ",$_);
+#yl    ($id,$yr,$mn,$dy,$hr,$mi,$p1,$p2,$dur,$tc,$sc,$ec,$j1,$val,$qual,$rv,$org) = split(" ",$_);
+    ($yr,$mn,$dy,$hr,$mi,$id,$p1,$p2,$dur,$tc,$sc,$ec,$j1,$val,$qual,$rv,$org) = split(" ",$_);
 
     #################################################
     # Create Obs date in form yyyymmdd 
@@ -143,12 +144,12 @@ while (<SHEF>)
 
              if ( $obsdif < $curdif )
              {
-                 if ($val > $dups[4] && $dups[11] != 1)
-                 {
+#                 if ($val > $dups[4] && $dups[11] != 1)
+#                 {
                        $array{$stndate} = "$obsdate,$id,$obstime,$elemcod,$val,1,$dur,$tc,$sc,$ec,$org,1,$qual";
                        $amount{$stndate} = "$val";
                        $updrec++;
-                 }
+#                 }
              }
         }
     }
