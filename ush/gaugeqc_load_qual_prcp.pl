@@ -93,7 +93,7 @@ while (<SHEF>)
     else
     {
         $err=1;
-#        print "$obsdate,$id,$obstime,$elemcod,$val,$rv,$dur,$tc,$sc,$ec,$org,'0',$qual\n";
+#        print "$obsdate,$id,$obstime,$elemcod,$val,$rv,$dur,$tc,$sc,$ec,$org,'1',$qual\n";
     }
 
     #################################################
