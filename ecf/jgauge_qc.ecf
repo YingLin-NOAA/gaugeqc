@@ -35,8 +35,8 @@ if [ $envir = dev ]; then
 # COMROOT and DCOMROOT not used. 
 #  export COMROOT=/meso/noscrub/$LOGNAME/gaugeqc.input/com
 #  export DCOMROOT=/meso/noscrub/$LOGNAME/gaugeqc.input/dcom
-  export DCOM=/gpfs/gp1/nco/ops/dcom
-  export COMIN=/gpfs/gd1/emc/meso/noscrub/$LOGNAME/gaugeqc.input
+  export DCOM=/gpfs/tp1/nco/ops/dcom
+  export COMIN=$NOSCRUB/gaugeqc.input
   export COMOUT=$NOSCRUB/gaugeqc.output
   export HOMEgauge=$NOSCRUB/gaugeqc.${gaugeqc_ver}
   export TMPDIR=/gpfs/dell2/stmp/$LOGNAME/tmpnwprd
@@ -71,8 +71,8 @@ if [ "$RUN_ENVIR" = dev ]; then        ### for dev
 # so that 'setpdy' in the J-job will have PDYm1=qcday.  Otherwise leave
 # qcday and PDY unset here.  Normally run is submitted at 03:50Z $PDY, for
 # QC day of PDYm1.  
-  qcday=20190520
-  export PDY=`$NDATE +24 ${qcday}12 | cut -c 1-8`
+#  qcday=20190520
+#  export PDY=`$NDATE +24 ${qcday}12 | cut -c 1-8`
   export keepwrkdir=Y
 fi
 

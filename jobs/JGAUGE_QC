@@ -67,7 +67,7 @@ setpdy.sh
 export COM=${COM:-/com}
 export DCOM=${DCOM:-/dcom}
 
-export COMSHF=/gpfs/gp1/nco/ops/com/ingest/prod/shf.$PDYm1
+export COMSHF=/gpfs/tp1/nco/ops/com/ingest/prod/shf.$PDYm1
 # NEW: export COMSHF=`compath.py ingest/prod`
 export DCOMgauge=$DCOM/us007003/gaugeqc
 
