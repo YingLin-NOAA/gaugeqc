@@ -17,7 +17,15 @@ cd $DATA
 mmdd=`echo $PDYm1 | cut -c5-8`
 
 # process daily gauge data from the SHEF output:
-egrep ' P P 2001| P P 5004' $COMSHF/$PDYm1.pe > rfc24.input
+# Sid Katz:
+#  - keep reports whose value is listed as missing (if it is a revised report)
+#  - do not use estimated values from PDX & CANV RFC's (NW and CN)
+
+egrep ' P P 2001| P P 5004' $COMSHF/$PDYm1.pe \
+  | grep -v '\-9999.000 Z 0' \
+  | grep -v 'Z 0 PDX ' | grep -v 'Z 1 PDX ' \
+  | grep -v 'Z 0 CANV ' | grep -v 'Z 1 CANV ' > rfc24.input
+
 $USHgauge/gaugeqc_load_qual_prcp.pl $PDYm1 > usa-dlyprcp-${PDYm1}
 cp usa-dlyprcp-${PDYm1} $COMOUT/.
 
