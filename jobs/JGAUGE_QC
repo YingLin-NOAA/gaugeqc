@@ -65,13 +65,12 @@ setpdy.sh
 ##############################################
 
 export COM=${COM:-/com}
-export DCOM=${DCOM:-/dcom}
-# future: export COMSHF=`compath.py ingest/prod`/shef_pefiles
+export DCOM=${DCOM:-/gpfs/dell1/nco/ops/dcom}
+# future: when prod ingest moves to Dell (not yet, as of 2019/6/24): 
+# export COMSHF=`compath.py ingest/prod`/shef_pefiles
 export COMSHF=/gpfs/dell1/nco/ops/dcom/prod/shef_pefiles
 
-# When HADS resumes sending over all_dcp_defs.txt to NCEP ftp, change the line
-# below to "export DCOMgauge=$DCOM/prod/gaugeqc".
-export DCOMgauge=$DCOM/us007003/gaugeqc
+export DCOMgauge=$DCOM/prod/gaugeqc
 
 if [ "${RUN_ENVIR}" = dev ]    ### For Developers
 then
