@@ -12,8 +12,8 @@ set -x
 
 module purge
 module load ips/18.0.1.163    # for prod_util
-module load prod_util/1.1.1
-module load prod_envir/1.0.2
+module load prod_util/1.1.2
+module load prod_envir/1.0.3
 module load pm5/1.0           # Perl, for the  Date::Calc 
 
 export gaugeqc_ver=v1.1.2
